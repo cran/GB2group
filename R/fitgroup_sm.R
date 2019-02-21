@@ -211,7 +211,7 @@ fitgroup.sm <- function(y, x = rep(1 / length(y), length(y)), gini.e, pc.inc = N
   }
   else {
     regress <- try(opt.gmm.sm(cprob, share, init.est = c(nls.a, temp.b, nls.q), cons.est = c(nls.a, temp.b, nls.q)))
-    if('try-error'%in%class(regress)) {
+    if('try-error'%in%class(regress$opt1)) {
       print("Unable to compute GMM estimates of the parameters. The weight martrix cannot be inverted. Try changing the value of rescale")
       gmm.coef <- matrix(NA, 1, 3)
       gmm.se <- matrix(NA, 1, 3)
@@ -269,6 +269,9 @@ fitgroup.sm <- function(y, x = rep(1 / length(y), length(y)), gini.e, pc.inc = N
   colnames(gmm.estimation) <- c("a", "b", "q")
   row.names(gmm.estimation) <- c("Coef.", "se")
 
+  grouped.data <- rbind(share, cprob)
+  row.names(grouped.data) <- c("Income", "Population")
+
   if (gini == TRUE) {
     if (!is.na(gmm.rss)) {
       gmm.gini <- simgini.sm(gmm.coef)
@@ -280,11 +283,11 @@ fitgroup.sm <- function(y, x = rep(1 / length(y), length(y)), gini.e, pc.inc = N
     gini.estimation[1] <- gini.e
     gini.estimation[2] <- nls.gini
     gini.estimation[3] <- gmm.gini
-    out2 <- list(nls.estimation = nls.estimation, nls.rss = nls.rss, gmm.estimation = gmm.estimation, gmm.rss = gmm.rss,
+    out2 <- list(grouped.data = grouped.data, distribution = "Singh-Maddala", nls.estimation = nls.estimation, nls.rss = nls.rss, gmm.estimation = gmm.estimation, gmm.rss = gmm.rss,
       gini.estimation = gini.estimation)
   }
   else {
-    out2 <- list(nls.estimation = nls.estimation, nls.rss = nls.rss, gmm.estimation = gmm.estimation, gmm.rss = gmm.rss)
+    out2 <- list(grouped.data = grouped.data, distribution = "Singh-Maddala", nls.estimation = nls.estimation, nls.rss = nls.rss, gmm.estimation = gmm.estimation, gmm.rss = gmm.rss)
   }
   return(out2)
 }

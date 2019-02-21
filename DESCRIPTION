@@ -2,7 +2,7 @@ Package: GB2group
 Type: Package
 Title: Estimation of the Generalised Beta Distribution of the Second
         Kind from Grouped Data
-Version: 0.1.0
+Version: 0.2.0
 Author: Vanesa Jorda <jordav@unican.es>, Jose Maria Sarabia
     <jose.sarabia@unican.es>, Markus Jäntti <markus.jantti@sofi.su.se>.
 Maintainer: Vanesa Jorda <jordav@unican.es>
@@ -24,6 +24,6 @@ Encoding: UTF-8
 LazyData: true
 RoxygenNote: 5.0.1
 NeedsCompilation: no
-Packaged: 2018-11-05 16:27:59 UTC; Vanesa
+Packaged: 2019-02-21 12:47:05 UTC; Vanesa
 Repository: CRAN
-Date/Publication: 2018-11-14 15:00:15 UTC
+Date/Publication: 2019-02-21 13:20:03 UTC

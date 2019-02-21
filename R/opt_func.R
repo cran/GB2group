@@ -5,12 +5,12 @@ opt.gmm.gb2 <- function (x, y, init.est, cons.est, est.method = 1) {
     return(min.gmm)
   }
   opt1 <- try(optim(init.est, minfun, gr = NULL, x, y, method = "BFGS", control = list(parscale = init.est, pgtol = 1e-08)))
-  if (est.method != 2) {
-    return(list(opt1 = opt1))
+  if (est.method == 2 | 'try-error'%in%class(opt1)) {
+    opt1 <- try(optim(init.est, minfun, gr = NULL, x, y, method = "L-BFGS-B", lower = 0,
+      control = list(parscale = init.est, pgtol = 1e-08)))
   }
-  if (est.method == 2 |'try-error'%in%class(opt1)) {
-    opt2 <- optim(init.est, minfun, gr = NULL, x, y, method = "L-BFGS-B", lower = 0, control = list(parscale = init.est, pgtol = 1e-08))
-    return(list(opt2 = opt2))
+  if (!'try-error'%in%class(opt1)) {
+    return(list(opt1 = opt1))
   }
 }
 
@@ -22,12 +22,12 @@ opt.gmm.da <- function (x, y, init.est, cons.est, est.method = 1) {
     return(min.gmm)
   }
   opt1 <- try(optim(init.est, minfun, gr = NULL, x, y, method = "BFGS", control = list(parscale = init.est, pgtol = 1e-08)))
-  if (est.method != 2) {
-    return(list(opt1 = opt1))
+  if (est.method == 2 | 'try-error'%in%class(opt1)) {
+    opt1 <- try(optim(init.est, minfun, gr = NULL, x, y, method = "L-BFGS-B", lower = 0,
+      control = list(parscale = init.est, pgtol = 1e-08)))
   }
-  if (est.method == 2 |'try-error'%in%class(opt1)) {
-    opt2 <- optim(init.est, minfun, gr = NULL, x, y, method = "L-BFGS-B", lower = 0, control = list(parscale = init.est, pgtol = 1e-08))
-    return(list(opt2 = opt2))
+  if (!'try-error'%in%class(opt1)) {
+    return(list(opt1 = opt1))
   }
 }
 
@@ -39,12 +39,12 @@ opt.gmm.b2 <- function (x, y, init.est, cons.est, est.method = 1) {
     return(min.gmm)
   }
   opt1 <- try(optim(init.est, minfun, gr = NULL, x, y, method = "BFGS", control = list(parscale = init.est, pgtol = 1e-08)))
-  if (est.method != 2) {
-    return(list(opt1 = opt1))
+  if (est.method == 2 | 'try-error'%in%class(opt1)) {
+    opt1 <- try(optim(init.est, minfun, gr = NULL, x, y, method = "L-BFGS-B", lower = 0,
+      control = list(parscale = init.est, pgtol = 1e-08)))
   }
-  if (est.method == 2 |'try-error'%in%class(opt1)) {
-    opt2 <- optim(init.est, minfun, gr = NULL, x, y, method = "L-BFGS-B", lower = 0, control = list(parscale = init.est, pgtol = 1e-08))
-    return(list(opt2 = opt2))
+  if (!'try-error'%in%class(opt1)) {
+    return(list(opt1 = opt1))
   }
 }
 
@@ -56,12 +56,12 @@ opt.gmm.sm <- function (x, y, init.est, cons.est, est.method = 1) {
     return(min.gmm)
   }
   opt1 <- try(optim(init.est, minfun, gr = NULL, x, y, method = "BFGS", control = list(parscale = init.est, pgtol = 1e-08)))
-  if (est.method != 2) {
-    return(list(opt1 = opt1))
+  if (est.method == 2 | 'try-error'%in%class(opt1)) {
+    opt1 <- try(optim(init.est, minfun, gr = NULL, x, y, method = "L-BFGS-B", lower = 0,
+      control = list(parscale = init.est, pgtol = 1e-08)))
   }
-  if (est.method == 2 |'try-error'%in%class(opt1)) {
-    opt2 <- optim(init.est, minfun, gr = NULL, x, y, method = "L-BFGS-B", lower = 0, control = list(parscale = init.est, pgtol = 1e-08))
-    return(list(opt2 = opt2))
+  if (!'try-error'%in%class(opt1)) {
+    return(list(opt1 = opt1))
   }
 }
 
@@ -73,12 +73,12 @@ opt.gmm.f <- function (x, y, init.est, cons.est, est.method = 1) {
     return(min.gmm)
   }
   opt1 <- try(optim(init.est, minfun, gr = NULL, x, y, method = "BFGS", control = list(parscale = init.est, pgtol = 1e-08)))
-  if (est.method != 2) {
-    return(list(opt1 = opt1))
+  if (est.method == 2 | 'try-error'%in%class(opt1)) {
+    opt1 <- try(optim(init.est, minfun, gr = NULL, x, y, method = "L-BFGS-B", lower = 0,
+      control = list(parscale = init.est, pgtol = 1e-08)))
   }
-  if (est.method == 2 |'try-error'%in%class(opt1)) {
-    opt2 <- optim(init.est, minfun, gr = NULL, x, y, method = "L-BFGS-B", lower = 0, control = list(parscale = init.est, pgtol = 1e-08))
-    return(list(opt2 = opt2))
+  if (!'try-error'%in%class(opt1)) {
+    return(list(opt1 = opt1))
   }
 }
 
@@ -88,12 +88,13 @@ opt.gmm.ln <- function (x, y, init.est, cons.est, est.method = 1, hess = FALSE) 
     min.gmm <- t(moments.gmm) %*% weight.mat.ln(cons.est, x) %*% moments.gmm
     return(min.gmm)
   }
-  opt1 <- optim(init.est, minfun, gr = NULL, x, y, method = "BFGS", control = list(parscale = init.est, pgtol = 1e-08), hessian = hess)
-  if (est.method != 2)
+  opt1 <- try(optim(init.est, minfun, gr = NULL, x, y, method = "BFGS", control = list(parscale = init.est, pgtol = 1e-08)))
+  if (est.method == 2 | 'try-error'%in%class(opt1)) {
+    opt1 <- try(optim(init.est, minfun, gr = NULL, x, y, method = "L-BFGS-B", lower = 0,
+      control = list(parscale = init.est, pgtol = 1e-08)))
+  }
+  if (!'try-error'%in%class(opt1)) {
     return(list(opt1 = opt1))
-  if (est.method == 2 |'try-error'%in%class(opt1)) {
-    opt2 <- optim(init.est, minfun, gr = NULL, x, y, method = "L-BFGS-B", lower = 0, control = list(parscale = init.est, pgtol = 1e-08), hessian = hess)
-    return(list(opt2 = opt2))
   }
 }
 
