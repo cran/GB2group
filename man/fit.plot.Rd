@@ -9,7 +9,7 @@ fit.plot(fit, fit.type = 1, fit.legend = FALSE, l.size = 0.7)
 \arguments{
 \item{fit}{A character string "name" naming the object that contains the estimation of the parametric model for which the Lorenz curve is plotted.}
 
-\item{fit.type}{specifies the method used to estimate the parametric model. By default, \code{fit.type = 1}, which represents the Lorenz curve estimated by NLS. If \code{fit.type = 2}, the Lorenz curve belongs to the GMM estimation.}
+\item{fit.type}{specifies the method used to estimate the parametric model. By default, \code{fit.type = 1}, which represents the Lorenz curve estimated by EWMD. If \code{fit.type = 2}, the Lorenz curve belongs to the OMD estimation.}
 
 \item{fit.legend}{If \code{TRUE}, the graph includes a legend indicating the model for which the Lorenz curve is plotted.}
 
@@ -28,7 +28,7 @@ before representing the theoretical Lorenz curve. To do so, create an object con
  \code{\link{fitgroup.gb2}}, \code{\link{fitgroup.b2}}, \code{\link{fitgroup.da}},
 \code{\link{fitgroup.sm}}, \code{\link{fitgroup.ln}} or \code{\link{fitgroup.f}}. The name of this object is used (with quotations marks)
 as the first argument of \code{fit.plot} (see examples below). This function returns a plot with the Lorenz curve of the model
-estimated by NLS or GMM. More than one fit can be plotted, even when different sets of data are used. The legend indicates the
+estimated by EWMD or OMD. More than one fit can be plotted, even when different sets of data are used. The legend indicates the
 distribution for which the Lorenz curve is represented.
 }
 \examples{
@@ -40,4 +40,3 @@ fit.plot(c("fit.ln", "fit.b2"), fit.legend = TRUE, l.size = 0.8)
 Jorda, V., Sarabia, J.M., & Jäntti, M. (2018). Estimation of income inequality from grouped data.
  arXiv preprint arXiv:1808.09831.
 }
-

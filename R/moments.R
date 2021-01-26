@@ -29,6 +29,6 @@ moment.gb2 <- function(theta, r) {
 moment.ln <- function(theta, r) {
   s <- theta[1]
   mu <- theta[2]
-  m.ln <- exp(mu * r + r^2 * s^2)
+  m.ln <- exp(mu * r + r^2 * s^2 / 2)
   return(m.ln)
 }

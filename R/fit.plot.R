@@ -3,7 +3,7 @@
 #' The function \code{fit.plot} plots the parametric Lorenz curve and the observed income shares used for the estimation of the income distributions belonging to the GB2 family.
 #'
 #' @param fit  A character string "name" naming the object that contains the estimation of the parametric model for which the Lorenz curve is plotted.
-#' @param fit.type specifies the method used to estimate the parametric model. By default, \code{fit.type = 1}, which represents the Lorenz curve estimated by NLS. If \code{fit.type = 2}, the Lorenz curve belongs to the GMM estimation.
+#' @param fit.type specifies the method used to estimate the parametric model. By default, \code{fit.type = 1}, which represents the Lorenz curve estimated by EWMD. If \code{fit.type = 2}, the Lorenz curve belongs to the OMD estimation.
 #' @param fit.legend If \code{TRUE}, the graph includes a legend indicating the model for which the Lorenz curve is plotted.
 #' @param  l.size determines the size of the legend.
 #'
@@ -15,7 +15,7 @@
 #'  \code{\link{fitgroup.gb2}}, \code{\link{fitgroup.b2}}, \code{\link{fitgroup.da}},
 #' \code{\link{fitgroup.sm}}, \code{\link{fitgroup.ln}} or \code{\link{fitgroup.f}}. The name of this object is used (with quotations marks)
 #' as the first argument of \code{fit.plot} (see examples below). This function returns a plot with the Lorenz curve of the model
-#' estimated by NLS or GMM. More than one fit can be plotted, even when different sets of data are used. The legend indicates the
+#' estimated by EWMD or OMD. More than one fit can be plotted, even when different sets of data are used. The legend indicates the
 #' distribution for which the Lorenz curve is represented.
 #'
 #' @references
@@ -40,20 +40,20 @@ fit.plot <- function(fit, fit.type = 1, fit.legend = FALSE, l.size = 0.7) {
     stop("l.size must be numeric")
   }
 
-  plot(NULL,  ylab = "Income shares", ylim = c(0, 1), xlim= c(0, 1),
-    xlab = "Population shares", panel.first = grid(col = "gray78"))
+  plot(c(0, 1), c(0, 1),  ylab = "Income shares", ylim = c(0, 1), xlim= c(0, 1),
+    xlab = "Population shares", panel.first = grid(col = "gray78"), type = "l", lwd = 1.5)
   legendtext <- rep(NA, length(fit))
   for(i in 1:length(fit)){
     x <- eval(parse(text = fit[i]))
     if(fit.type == 1) {
-      param <- t(as.matrix(x$nls.estimation[1, ]))
-      colnames(param) <- colnames(x$nls.estimation)
+      param <- t(as.matrix(x$ewmd.estimation[1, ]))
+      colnames(param) <- colnames(x$ewmd.estimation)
       scale <- c("b", "mu")
       ind <- which(colnames(param) %in% scale)
       param[, colnames(param)[ind]] <- 10
     }
     if(fit.type == 2) {
-      param <- t(as.matrix(x$gmm.estimation[1, ]))
+      param <- t(as.matrix(x$omd.estimation[1, ]))
     }
     legendtext[i] <- paste(c(x$distribution, " distribution"), collapse = "")
     shares <- c(0, x$grouped.data[1, ], 1)

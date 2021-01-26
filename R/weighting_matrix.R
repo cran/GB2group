@@ -121,7 +121,7 @@ weight.mat.ln <- function(theta, pr) {
   }
   w.mat <- outer(c(pr, 0.999999999), c(pr, 0.999999999), w.cop)
   w.mat[lower.tri(w.mat)] <- t(w.mat)[lower.tri(w.mat)]
-  y.cop <- matrix(cbind(diag(1 / e1, length(pr)), -lc.ln(theta, pr) / e1), length(pr), length(pr) + 1)
+  y.cop <- matrix(cbind(diag(1 / e1, length(pr)), -lc.ln(theta, pr) / e1), length(pr), length(pr) + 1) 
   return(solve(y.cop %*% w.mat %*% t(y.cop)))
 }
 

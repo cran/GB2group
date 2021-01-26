@@ -1,20 +1,20 @@
 #' Estimation of the Beta 2 distribution from group data
 #'
 #' The function \code{fitgroup.b2} implements the estimation of the Beta 2 distribution from group
-#' data in form of income shares using the non-linear least squares (NLS) and the generalised method of
-#' moments (GMM) estimators.
+#' data in form of income shares using the equally weighted minimum distance (EWMD) and the 
+#' optimally weighted minimum distance (OMD) estimators.
 #'
 #' @inheritParams fitgroup.gb2
 #' @return the function \code{fitgroup.b2} returns the following objects:
 #'   \itemize{
-#'     \item \code{nls.estimation} Matrix containing the parameters of the Beta 2 distribution estimated
-#'        by NLS and, if \code{se.nls = TRUE}, their standard errors.
-#'     \item \code{nls.rss} Residual sum of squares of the NLS estimation.
-#'     \item \code{gmm.estimation} Matrix containing the parameters of the Beta 2 distribution estimated
-#'        by GMM and, if \code{se.gmm = TRUE}, their standard errors.
-#'     \item \code{gmm.rss} Weighted residual sum of squares of the GMM estimation.
+#'     \item \code{ewmd.estimation} Matrix containing the parameters of the Beta 2 distribution estimated
+#'        by EWMD and, if \code{se.ewmd = TRUE}, their standard errors.
+#'     \item \code{ewmd.rss} Residual sum of squares of the EWMD estimation.
+#'     \item \code{omd.estimation} Matrix containing the parameters of the Beta 2 distribution estimated
+#'        by OMD and, if \code{se.omd = TRUE}, their standard errors.
+#'     \item \code{omd.rss} Weighted residual sum of squares of the OMD estimation.
 #'     \item \code{gini.estimation} Vector with the survey Gini index and the estimated Gini
-#'      indices using NLS and GMM whenever possible.
+#'      indices using EWMD and OMD estimates whenever possible.
 #'   }
 #' @details The Generalised Beta of the Second Kind (GB2) is a general class of distributions that is
 #' acknowledged to provide an accurate fit to income data (McDonald 1984; McDonald and Mantrala,1995).
@@ -32,7 +32,7 @@
 #' including The World Income Inequality Database (UNU-WIDER, 2017), PovcalNet (World Bank, 2018) or the World Wealth
 #' and Income Database (Alvaredo et al., 2018).
 #'
-#' For NLS, numerical optimisation is achieved using the Levenberg-Marquardt Algorithm via \code{\link[minpack.lm]{nlsLM}}
+#' For EWMD, numerical optimisation is achieved using the Levenberg-Marquardt Algorithm via \code{\link[minpack.lm]{nlsLM}}
 #' Conventionally, moment estimates of a restricted model are taken as initial values. A potential
 #' limitation of this method is that, as the dimensionality of the parameter
 #' space increases, it is more difficult to achieve global convergence. Although it seems
@@ -54,20 +54,20 @@
 #' This method, however, does not provide
 #' an estimate for the scale parameter because the Lorenz curve is independent to scale. The scale
 #' parameter is estimated by equating the sample mean, specified by \code{pc.inc}, to the population
-#' mean of the Beta 2 distribution. Because NLS does not use the optimal
+#' mean of the Beta 2 distribution. Because EWMD does not use the optimal
 #' covariance matrix of the moment conditions, the standard errors of the parameters
 #' are obtained by Monte Carlo simulation. Please be aware that the estimation of the standard errors
 #' might take a long time, especially if the sample size is large.
 #'
-#' \code{fitgroup.b2} also implements a two-stage GMM estimator. In the first stage, NLS estimates
+#' \code{fitgroup.b2} also implements a two-stage OMD estimator. In the first stage, EWMD estimates
 #' are obtained as described above, which are used to compute a first stage estimator
 #' of the weighting matrix. The weighting matrix is used in the second stage to obtain optimally
 #' weighted estimates of the parameters. The numerical optimisation is performed using
 #' \code{\link{optim}} with the BFGS method. If \code{optim} reports an error, the L-BFGS method
-#' is used. NLS estimates are used as initial values for the optimisation algorithm. The GMM estimation
+#' is used. EWMD estimates are used as initial values for the optimisation algorithm. The OMD estimation
 #'  incorporates the optimal weight matrix, thus making possible to derive the asymptotic standard
 #'  errors of the parameters using results from Beach and Davison(1983) and Hajargasht and
-#'  Griffiths (2016). As in the NLS estimation, the scale parameter is obtained by matching the
+#'  Griffiths (2016). As in the EWMD estimation, the scale parameter is obtained by matching the
 #'  population mean of the Beta 2 distribution to the sample mean. Hence, the standard error of the scale
 #'  parameter is estimated by Monte Carlo simulation.
 #'
@@ -80,7 +80,6 @@
 #' @references
 #'
 #'  Alvaredo, F., A. Atkinson, T. Piketty, E. Saez, and G. Zucman. The World Wealth and Income Database.
-#'  \url{http://www.wid.world}.
 #'
 #' Beach, C.M. and R. Davidson (1983): Distribution-free statistical inference with
 #' Lorenz curves and income shares, \emph{The Review of Economic Studies}, 50, 723 - 735.
@@ -98,7 +97,6 @@
 #'  \emph{Journal of Applied Econometrics}, 10, 201 - 204.
 #'
 #'  UNU-WIDER (2018). World Income Inequality Database (WIID3.4).
-#' \url{ https://www.wider.unu.edu/project/wiid-world-income-inequality-database}.
 #'
 #'  World Bank (2018). PovcalNet Data Base. Washington, DC: World Bank. \url{http://iresearch.worldbank.org/PovcalNet/home.aspx}.
 #'
@@ -110,7 +108,7 @@
 #' @importFrom stats resid coef uniroot optim
 #' @export
 #'
-fitgroup.b2 <- function(y, x = rep(1 / length(y), length(y)), gini.e, pc.inc = NULL, se.gmm = FALSE, se.nls = FALSE, se.scale = FALSE, N = NULL, nrep = 10^3, grid = 1:20, rescale = 1000, gini = FALSE) {
+fitgroup.b2 <- function(y, x = rep(1 / length(y), length(y)), gini.e, pc.inc = NULL, se.omd = FALSE, se.ewmd = FALSE, se.scale = FALSE, N = NULL, nrep = 10^3, grid = 1:20, rescale = 1000, gini = FALSE) {
   if(length(y) != length(x)) {
     stop("x and y must be of the same length")
   }
@@ -189,18 +187,18 @@ fitgroup.b2 <- function(y, x = rep(1 / length(y), length(y)), gini.e, pc.inc = N
   nls.q <- par.q[rg]
   if(nls.q <= 1) {
     temp.b <- NA
-    print("Unable to compute the scale parameter and the GMM estimation. Condition for the existence of the first moment violated: q <= 1")
+    print("Unable to compute the scale parameter and the OMD estimation. Condition for the existence of the first moment violated: q <= 1")
   }
   if(is.null(pc.inc)) {
     temp.b <- NA
-    print("Unable to compute the scale parameter and the GMM estimation. Per capita GDP not provided")
+    print("Unable to compute the scale parameter and the OMD estimation. Per capita GDP not provided")
   }
   if(!is.null(pc.inc) & (nls.q > 1)) {
     incpc <- pc.inc/rescale
     temp.b <- scale.gb2(c(1, nls.p, nls.q), incpc)
   }
   if(nls.q <= 2){
-    print("Unable to compute GMM estimates of the parameters. Condition for the existence of the second moment violated: q <= 2")
+    print("Unable to compute OMD estimates of the parameters. Condition for the existence of the second moment violated: q <= 2")
   }
   if(nls.q <= 2 | is.na(temp.b)) {
     gmm.coef <- matrix(NA, 1, 3)
@@ -210,7 +208,7 @@ fitgroup.b2 <- function(y, x = rep(1 / length(y), length(y)), gini.e, pc.inc = N
   else{
     regress <- try(opt.gmm.b2(cprob, share, init.est = c(temp.b, nls.p, nls.q), cons.est = c(temp.b, nls.p, nls.q)))
     if('try-error'%in%class(regress$opt1)) {
-      print("Unable to compute GMM estimates of the parameters. The weight martrix cannot be inverted. Try changing the value of rescale")
+      print("Unable to compute OMD estimates of the parameters. The weight martrix cannot be inverted. Try changing the value of rescale")
       gmm.coef <- matrix(NA, 1, 3)
       gmm.se <- matrix(NA, 1, 3)
       gmm.rss <- NA
@@ -218,22 +216,22 @@ fitgroup.b2 <- function(y, x = rep(1 / length(y), length(y)), gini.e, pc.inc = N
     else {
       gmm.rss <- regress$opt1$value
       gmm.coef <- regress$opt1$par
-      gmm.coef[1] <- scale.gb2(c(1, gmm.coef[2], gmm.coef[3]), incpc)
+      gmm.coef[1] <- scale.gb2(c(1, gmm.coef[2], gmm.coef[3]), pc.inc)
       gmm.se <- matrix(NA, 1, 3)
     }
   }
   nls.estimation <- matrix(NA, 2, 3)
-  nls.coef <- matrix(c(temp.b, nls.p, nls.q), 1, 3)
+  nls.coef <- matrix(c(temp.b * rescale, nls.p, nls.q), 1, 3)
   nls.se <- matrix(NA, 1, 3)
-  if (se.nls == TRUE) {
+  if (se.ewmd == TRUE) {
     if (is.null(N)) {
       print("Unable to compute the standard errors. Please provide the sample size")
     }
     else {
-      se.calc <- simsd.b2(x = x, theta = nls.coef, N = N, nrep = nrep, se.scale = se.scale)
+      se.calc <- simsd.b2(x = x, theta = nls.coef, N = N, nrep = nrep, se.scale = se.scale, factor.r = rescale)
       nls.se <- se.calc$nls.se
       if(!is.na(temp.b)) {
-        if(se.gmm == TRUE){
+        if(se.omd == TRUE){
           gmm.se <- gmmse.b2(gmm.coef, cprob, N)
         }
         if(se.scale == TRUE){
@@ -242,7 +240,7 @@ fitgroup.b2 <- function(y, x = rep(1 / length(y), length(y)), gini.e, pc.inc = N
       }
     }
   }
-  if (se.nls == FALSE & se.gmm == TRUE) {
+  if (se.ewmd == FALSE & se.omd == TRUE) {
     if (is.null(N)) {
       print("Unable to compute the standard errors. Please provide the sample size")
     }
@@ -250,7 +248,7 @@ fitgroup.b2 <- function(y, x = rep(1 / length(y), length(y)), gini.e, pc.inc = N
       if(!is.na(temp.b)) {
         gmm.se <- gmmse.b2(gmm.coef, cprob, N)
         if(se.scale == TRUE){
-          gmm.se[1] <- simsd.b2(x = x, theta = nls.coef, N = N, nrep = nrep, se.scale = se.scale)$sd.scale
+          gmm.se[1] <- simsd.b2(x = x, theta = nls.coef, N = N, nrep = nrep, se.scale = se.scale, factor.r = rescale)$sd.scale
         }
       }
     }
@@ -276,15 +274,15 @@ fitgroup.b2 <- function(y, x = rep(1 / length(y), length(y)), gini.e, pc.inc = N
     else {gmm.gini <- NA}
     nls.gini <- simgini.b2(nls.coef)
     gini.estimation <- matrix(NA, 1, 3)
-    colnames(gini.estimation) <- c("Survey", "NLS estimate", "GMM estimate")
+    colnames(gini.estimation) <- c("Survey", "EWMD estimate", "OMD estimate")
     gini.estimation[1] <- gini.e
     gini.estimation[2] <- nls.gini
     gini.estimation[3] <- gmm.gini
-    out2 <- list(grouped.data = grouped.data, distribution = "Beta 2", nls.estimation = nls.estimation, nls.rss = nls.rss, gmm.estimation = gmm.estimation, gmm.rss = gmm.rss,
+    out2 <- list(grouped.data = grouped.data, distribution = "Beta 2", ewmd.estimation = nls.estimation, ewmd.rss = nls.rss, omd.estimation = gmm.estimation, omd.rss = gmm.rss,
       gini.estimation = gini.estimation)
   }
   else {
-    out2 <- list(grouped.data = grouped.data, distribution = "Beta 2", nls.estimation = nls.estimation, nls.rss = nls.rss, gmm.estimation = gmm.estimation, gmm.rss = gmm.rss)
+    out2 <- list(grouped.data = grouped.data, distribution = "Beta 2", ewmd.estimation = nls.estimation, ewmd.rss = nls.rss, omd.estimation = gmm.estimation, omd.rss = gmm.rss)
   }
   return(out2)
 }

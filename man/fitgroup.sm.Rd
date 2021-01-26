@@ -4,9 +4,20 @@
 \alias{fitgroup.sm}
 \title{Estimation of the Singh-Maddala distribution from group data}
 \usage{
-fitgroup.sm(y, x = rep(1/length(y), length(y)), gini.e, pc.inc = NULL,
-  se.gmm = FALSE, se.nls = FALSE, se.scale = FALSE, N = NULL,
-  nrep = 10^3, grid = 1:20, rescale = 1000, gini = FALSE)
+fitgroup.sm(
+  y,
+  x = rep(1/length(y), length(y)),
+  gini.e,
+  pc.inc = NULL,
+  se.omd = FALSE,
+  se.ewmd = FALSE,
+  se.scale = FALSE,
+  N = NULL,
+  nrep = 10^3,
+  grid = 1:20,
+  rescale = 1000,
+  gini = FALSE
+)
 }
 \arguments{
 \item{y}{Vector of (non-cumulative) income shares expressed as decimals or percentage.
@@ -19,52 +30,52 @@ At least four data points are required to estimate the parameters of the income 
 \item{gini.e}{specifies the survey Gini index expressed as a decimal.}
 
 \item{pc.inc}{specifies an estimate of per capita income. If not provided, the weighting matrix
-cannot be computed, hence GMM estimates will not be reported.}
+cannot be computed, hence OMD estimates will not be reported.}
 
-\item{se.gmm}{If \code{TRUE} and the argument \code{N} is not \code{NULL}, the standard errors
-of the shape parameters of the GMM estimation are computed using results from Beach and Davison(1983) and Hajargasht and
+\item{se.omd}{If \code{TRUE} and the argument \code{N} is not \code{NULL}, the standard errors
+of the shape parameters of the OMD estimates are computed using results from Beach and Davison(1983) and Hajargasht and
  Griffiths (2016).See Jorda et al. (2018) for details. By default, this argument is \code{FALSE}.}
 
-\item{se.nls}{If \code{TRUE} and the argument \code{N} is not \code{NULL}, the standard errors of the NLS parameters
+\item{se.ewmd}{If \code{TRUE} and the argument \code{N} is not \code{NULL}, the standard errors of the EWMD estimates
 are obtained using Monte Carlo simulation of random samples of size \code{N}. By default, this argument is \code{FALSE}.}
 
 \item{se.scale}{If \code{TRUE} and the argument \code{N} is not \code{NULL}, the standard error
-of the scale parameter of the GMM estimation is obtained by Monte Carlo simulation
+of the scale parameter of the OMD estimation is obtained by Monte Carlo simulation
 of random samples of size \code{N}. By default, this argument is \code{FALSE}.}
 
 \item{N}{Specifies the size of the sample from which the grouped data was generated. This
 information is required to compute the standard errors.}
 
 \item{nrep}{Number of samples to be drawn in the Monte Carlo simulation of the standard error of
-the NLS parameters and the scale parameter of the GMM estimation.}
+the EWMD estimates and the scale parameter of the OMD estimation.}
 
 \item{grid}{A sequence of positive real numbers to be used as initial values using the
 algorithm developed by Jorda et al. (2018).}
 
 \item{rescale}{Rescalation factor of per capita income. Reescalation might help to invert
 the weight matrix when the scale is too large or too small. The argument \code{rescale} should be
-a positive real number which, by default, is set to 1000.}
+a positive real number which, by default, is set to 1000. The magnitude of this  factor is taken into account in the estimation of the scale parameter, so the provided estimate and its standard error are equivalent to those obtained with \code{rescale = 1}.}
 
-\item{gini}{if \code{TRUE}, reports an estimate of the Gini index using NLS and, if
-possible, GMM.}
+\item{gini}{if \code{TRUE}, reports an estimate of the Gini index using the EWMD estimator and, if
+possible, the OMD estimator.}
 }
 \value{
 the function \code{fitgroup.sm} returns the following objects:
   \itemize{
-    \item \code{nls.estimation} Matrix containing the parameters of the Singh-Maddala distribution estimated
-       by NLS and, if \code{se.nls = TRUE}, their standard errors.
-    \item \code{nls.rss} Residual sum of squares of the NLS estimation.
-    \item \code{gmm.estimation} Matrix containing the parameters of the Singh-Maddala distribution estimated
-       by GMM and, if \code{se.gmm = TRUE}, their standard errors.
-    \item \code{gmm.rss} Weighted residual sum of squares of the GMM estimation.
+    \item \code{ewmd.estimation} Matrix containing the parameters of the Singh-Maddala distribution estimated
+       by EWMD and, if \code{se.ewmd = TRUE}, their standard errors.
+    \item \code{ewmd.rss} Residual sum of squares of the EWMD estimation.
+    \item \code{omd.estimation} Matrix containing the parameters of the Singh-Maddala distribution estimated
+       by OMD and, if \code{se.omd = TRUE}, their standard errors.
+    \item \code{omd.rss} Weighted residual sum of squares of the OMD estimation.
     \item \code{gini.estimation} Vector with the survey Gini index and the estimated Gini
-     indices using NLS and GMM whenever possible.
+     indices using EWMD and OMD estimates whenever possible.
   }
 }
 \description{
 The function \code{fitgroup.sm} implements the estimation of the Singh-Maddala distribution from group
-data in form of income shares using the non-linear least squares (NLS) and the generalised method of
-moments (GMM) estimators.
+data in form of income shares using the equally weighted minimum distance (EWMD) and the 
+optimally weighted minimum distance (OMD) estimators.
 }
 \details{
 The Generalised Beta of the Second Kind (GB2) is a general class of distributions that is
@@ -83,7 +94,7 @@ variables. Examples of this type of data can be found in the largest datasets of
 including The World Income Inequality Database (UNU-WIDER, 2017), PovcalNet (World Bank, 2018) or the World Wealth
 and Income Database (Alvaredo et al., 2018).
 
-For NLS, numerical optimisation is achieved using the Levenberg-Marquardt Algorithm via \code{\link[minpack.lm]{nlsLM}}
+For EWMD, numerical optimisation is achieved using the Levenberg-Marquardt Algorithm via \code{\link[minpack.lm]{nlsLM}}
 Conventionally, moment estimates of a restricted model are taken as initial values. A potential
 limitation of this method is that, as the dimensionality of the parameter
 space increases, it is more difficult to achieve global convergence. Although it seems
@@ -105,20 +116,20 @@ particular sub-model. See Jorda et al. (2018) for details.
 This method, however, does not provide
 an estimate for the scale parameter because the Lorenz curve is independent to scale. The scale
 parameter is estimated by equating the sample mean, specified by \code{pc.inc}, to the population
-mean of the Singh-Maddala distribution. Because NLS does not use the optimal
+mean of the Singh-Maddala distribution. Because EWMD does not use the optimal
 covariance matrix of the moment conditions, the standard errors of the parameters
 are obtained by Monte Carlo simulation. Please be aware that the estimation of the standard errors
 might take a long time, especially if the sample size is large.
 
-\code{fitgroup.sm} also implements a two-stage GMM estimator. In the first stage, NLS estimates
+\code{fitgroup.sm} also implements a two-stage OMD estimator. In the first stage, EWMD estimates
 are obtained as described above, which are used to compute a first stage estimator
 of the weighting matrix. The weighting matrix is used in the second stage to obtain optimally
 weighted estimates of the parameters. The numerical optimisation is performed using
 \code{\link{optim}} with the BFGS method. If \code{optim} reports an error, the L-BFGS method
-is used. NLS estimates are used as initial values for the optimisation algorithm. The GMM estimation
+is used. EWMD estimates are used as initial values for the optimisation algorithm. The OMD estimation
  incorporates the optimal weight matrix, thus making possible to derive the asymptotic standard
  errors of the parameters using results from Beach and Davison(1983) and Hajargasht and
- Griffiths (2016). As in the NLS estimation, the scale parameter is obtained by matching the
+ Griffiths (2016). As in the EWMD estimation, the scale parameter is obtained by matching the
  population mean of the Singh-Maddala distribution to the sample mean. Hence, the standard error of the scale
  parameter is estimated by Monte Carlo simulation.
 
@@ -133,7 +144,6 @@ fitgroup.sm(y = c(9, 13, 17, 22, 39), gini.e = 0.29)
 }
 \references{
 Alvaredo, F., A. Atkinson, T. Piketty, E. Saez, and G. Zucman. The World Wealth and Income Database.
- \url{http://www.wid.world}.
 
 Beach, C.M. and R. Davidson (1983): Distribution-free statistical inference with
 Lorenz curves and income shares, \emph{The Review of Economic Studies}, 50, 723 - 735.
@@ -151,8 +161,6 @@ Lorenz curves and income shares, \emph{The Review of Economic Studies}, 50, 723 
  \emph{Journal of Applied Econometrics}, 10, 201 - 204.
 
  UNU-WIDER (2018). World Income Inequality Database (WIID3.4).
- \url{https://www.wider.unu.edu/project/wiid-world-income-inequality-database}.
 
  World Bank (2018). PovcalNet Data Base. Washington, DC: World Bank. \url{http://iresearch.worldbank.org/PovcalNet/home.aspx}.
 }
-

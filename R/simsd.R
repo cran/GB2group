@@ -1,7 +1,7 @@
 #' @importFrom ineq Lc
 #' @importFrom stats sd rlnorm
 
-simsd.gb2 <- function(x, theta, N, nrep, se.scale = F) {
+simsd.gb2 <- function(x, theta, N, nrep, se.scale = F, factor.r) {
   if(is.na(theta[2])) {
     a <- theta[1]
     b <- 1
@@ -30,12 +30,12 @@ simsd.gb2 <- function(x, theta, N, nrep, se.scale = F) {
       par.sim[i, c(1, 3, 4)] <- coef(regress)
       if(is.na(theta[2])) next
       else{
-        sim.mean <- mean(sim.sam)
+        sim.mean <- mean(sim.sam)/factor.r
         par.sim[i, 2] <- scale.gb2(coef(regress), sim.mean)
         if(se.scale == TRUE ){
           regress <- try(suppressWarnings(opt.gmm.gb2(cprob, share, init.est = par.sim[i, ], cons.est = par.sim[i, ])))
           if(!'try-error'%in%class(regress$opt1)) {
-            gmm.sc[i] <- scale.gb2(regress$opt1$par[-2], sim.mean)
+            gmm.sc[i] <- scale.gb2(regress$opt1$par[-2], sim.mean * factor.r) 
           }
         }
       }
@@ -45,11 +45,11 @@ simsd.gb2 <- function(x, theta, N, nrep, se.scale = F) {
   if(se.scale == TRUE) {
     sd.scale <- sd(gmm.sc, na.rm = T)
   }
-  nls.se <- c(sd(par.sim[, 1], na.rm = T), sd(par.sim[, 2], na.rm = T), sd(par.sim[, 3], na.rm = T), sd(par.sim[, 4], na.rm = T))
+  nls.se <- c(sd(par.sim[, 1], na.rm = T), sd(par.sim[, 2], na.rm = T) * factor.r, sd(par.sim[, 3], na.rm = T), sd(par.sim[, 4], na.rm = T))
   return(list(nls.se = nls.se, sd.scale = sd.scale))
 }
 
-simsd.da <- function(x, theta, N, nrep, se.scale = FALSE) {
+simsd.da <- function(x, theta, N, nrep, se.scale = FALSE, factor.r) {
   if(is.na(theta[2])) {
     a <- theta[1]
     b <- 1
@@ -78,13 +78,13 @@ simsd.da <- function(x, theta, N, nrep, se.scale = FALSE) {
       par.sim[i, c(1, 3)] <- coef(regress)
       if(is.na(theta[2])) next
       else{
-        sim.mean <- mean(sim.sam)
+        sim.mean <- mean(sim.sam) / factor.r
         par.sim[i, 2] <- scale.gb2(c(coef(regress), 1), sim.mean)
         if(se.scale == TRUE & (1 > 2 / par.sim[i, 1])){
           regress <- try(opt.gmm.da(cprob, share, init.est = par.sim[i, ], cons.est = par.sim[i, ]))
           if('try-error'%in%class(regress$opt1)) next
           else{
-            gmm.sc[i] <- scale.gb2(c(regress$opt1$par[-2], 1), sim.mean)
+            gmm.sc[i] <- scale.gb2(c(regress$opt1$par[-2], 1), sim.mean * factor.r)
           }
         }
       }
@@ -94,11 +94,11 @@ simsd.da <- function(x, theta, N, nrep, se.scale = FALSE) {
   if(se.scale == TRUE) {
     sd.scale <- sd(gmm.sc, na.rm = T)
   }
-  nls.se <- c(sd(par.sim[, 1], na.rm = T), sd(par.sim[, 2], na.rm = T), sd(par.sim[, 3], na.rm = T))
+  nls.se <- c(sd(par.sim[, 1], na.rm = T), sd(par.sim[, 2], na.rm = T) * factor.r, sd(par.sim[, 3], na.rm = T))
   return(list(nls.se = nls.se, sd.scale = sd.scale))
 }
 
-simsd.b2 <- function(x, theta, N, nrep, se.scale = FALSE) {
+simsd.b2 <- function(x, theta, N, nrep, se.scale = FALSE, factor.r) {
   if(is.na(theta[1])) {
     a <- 1
     b <- 1
@@ -127,13 +127,13 @@ simsd.b2 <- function(x, theta, N, nrep, se.scale = FALSE) {
       par.sim[i, c(2, 3)] <- coef(regress)
       if(is.na(theta[1])) next
       else{
-        sim.mean <- mean(sim.sam)
+        sim.mean <- mean(sim.sam) / factor.r
         par.sim[i, 1] <- scale.gb2(c(1, coef(regress)), sim.mean)
         if(se.scale == TRUE & (par.sim[i, 3] > 2)){
           regress <- try(opt.gmm.b2(cprob, share, init.est = par.sim[i, ], cons.est = par.sim[i, ]))
           if('try-error'%in%class(regress$opt1)) next
           else{
-            gmm.sc[i] <- scale.gb2(c(1, regress$opt1$par[-1]), sim.mean)
+            gmm.sc[i] <- scale.gb2(c(1, regress$opt1$par[-1]), sim.mean * factor.r)
           }
         }
       }
@@ -143,12 +143,12 @@ simsd.b2 <- function(x, theta, N, nrep, se.scale = FALSE) {
   if(se.scale == TRUE) {
     sd.scale <- sd(gmm.sc, na.rm = T)
   }
-  nls.se <- c(sd(par.sim[, 1], na.rm = T), sd(par.sim[, 2], na.rm = T), sd(par.sim[, 3], na.rm = T))
+  nls.se <- c(sd(par.sim[, 1], na.rm = T) * factor.r, sd(par.sim[, 2], na.rm = T), sd(par.sim[, 3], na.rm = T))
   return(list(nls.se = nls.se, sd.scale = sd.scale))
 }
 
 
-simsd.sm <- function(x, theta, N, nrep, se.scale = FALSE) {
+simsd.sm <- function(x, theta, N, nrep, se.scale = FALSE, factor.r) {
   if(is.na(theta[2])) {
     a <- theta[1]
     b <- 1
@@ -177,13 +177,13 @@ simsd.sm <- function(x, theta, N, nrep, se.scale = FALSE) {
       par.sim[i, c(1, 3)] <- coef(regress)
       if(is.na(theta[2])) next
       else{
-        sim.mean <- mean(sim.sam)
+        sim.mean <- mean(sim.sam) / factor.r
         par.sim[i, 2] <- scale.gb2(c(coef(regress)[1], 1, coef(regress)[2]), sim.mean)
         if(se.scale == TRUE & (par.sim[i, 3] > 2 / par.sim[i, 1])){
           regress <- try(opt.gmm.sm(cprob, share, init.est = par.sim[i, ], cons.est = par.sim[i, ]))
           if('try-error'%in%class(regress$opt1)) next
           else{
-            gmm.sc[i] <- scale.gb2(c(regress$opt1$par[1], 1, regress$opt1$par[3]), sim.mean)
+            gmm.sc[i] <- scale.gb2(c(regress$opt1$par[1], 1, regress$opt1$par[3]), sim.mean * factor.r)
           }
         }
       }
@@ -193,11 +193,11 @@ simsd.sm <- function(x, theta, N, nrep, se.scale = FALSE) {
   if(se.scale == TRUE) {
     sd.scale <- sd(gmm.sc, na.rm = T)
   }
-  nls.se <- c(sd(par.sim[, 1], na.rm = T), sd(par.sim[, 2], na.rm = T), sd(par.sim[, 3], na.rm = T))
+  nls.se <- c(sd(par.sim[, 1], na.rm = T), sd(par.sim[, 2], na.rm = T) * factor.r, sd(par.sim[, 3], na.rm = T))
   return(list(nls.se = nls.se, sd.scale = sd.scale))
 }
 
-simsd.f <- function(x, theta, N, nrep, se.scale = FALSE) {
+simsd.f <- function(x, theta, N, nrep, se.scale = FALSE, factor.r) {
   if(is.na(theta[2])) {
     a <- theta[1]
     b <- 1
@@ -226,13 +226,13 @@ simsd.f <- function(x, theta, N, nrep, se.scale = FALSE) {
       par.sim[i, 1] <- coef(regress)
       if(is.na(theta[2])) next
       else{
-        sim.mean <- mean(sim.sam)
+        sim.mean <- mean(sim.sam) / factor.r
         par.sim[i, 2] <- scale.gb2(c(coef(regress)[1], 1, 1), sim.mean)
         if(se.scale == TRUE & (1 > 2 / par.sim[i, 1])){
           regress <- try(opt.gmm.f(cprob, share, init.est = par.sim[i, ], cons.est = par.sim[i, ]))
           if('try-error'%in%class(regress$opt1)) next
           else{
-            gmm.sc[i] <- scale.gb2(c(regress$opt1$par[1], 1, 1), sim.mean)
+            gmm.sc[i] <- scale.gb2(c(regress$opt1$par[1], 1, 1), sim.mean * factor.r)
           }
         }
       }
@@ -242,11 +242,11 @@ simsd.f <- function(x, theta, N, nrep, se.scale = FALSE) {
   if(se.scale == TRUE) {
     sd.scale <- sd(gmm.sc, na.rm = T)
   }
-  nls.se <- c(sd(par.sim[, 1], na.rm = T), sd(par.sim[, 2], na.rm = T))
+  nls.se <- c(sd(par.sim[, 1], na.rm = T), sd(par.sim[, 2], na.rm = T) * factor.r)
   return(list(nls.se = nls.se, sd.scale = sd.scale))
 }
 
-simsd.ln <- function(x, theta, N, nrep, se.scale = FALSE) {
+simsd.ln <- function(x, theta, N, nrep, se.scale = FALSE, factor.r) {
   if(is.na(theta[2])) {
     s <- theta[1]
     mu <- 1
@@ -270,13 +270,14 @@ simsd.ln <- function(x, theta, N, nrep, se.scale = FALSE) {
       par.sim[i, 1] <- coef(regress)
       if(is.na(theta[2])) next
       else{
-        sim.mean <- mean(sim.sam)
-        par.sim[i, 2] <- scale.ln(coef(regress)[1], sim.mean)
+        sim.mean <- mean(sim.sam) / factor.r
+        par.sim[i, 2] <- scale.ln(coef(regress)[1], sim.mean * factor.r)
+        tb <- scale.ln(coef(regress)[1], sim.mean)
         if(se.scale == TRUE){
-          regress <- try(opt.gmm.ln(cprob, share, init.est = par.sim[i, ], cons.est = par.sim[i, ]))
+          regress <- try(opt.gmm.ln(cprob, share, init.est = c(par.sim[i, 1], tb), cons.est = c(par.sim[i, 1], tb)))
           if('try-error'%in%class(regress$opt1)) next
           else{
-            gmm.sc[i] <- scale.ln(regress$opt1$par[1], sim.mean)
+            gmm.sc[i] <- scale.ln(regress$opt1$par[1], sim.mean * factor.r)
           }
         }
       }
